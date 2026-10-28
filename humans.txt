@@ -1,0 +1,20 @@
+/* TEAM */
+Realização: Fundação Edmílson
+Site: https://fundacaoedmilson.org.br
+Contato: contato@fundacaoedmilson.org.br
+Local: Taquaritinga/SP e Santana de Parnaíba/SP, Brasil
+
+/* CAMPANHA */
+Nome: Árvore do Bem · Natal 2026
+Período: 03/11/2026 a 30/11/2026
+WhatsApp: +55 11 91574-5343
+
+/* SITE */
+Última atualização: 2026/10/28
+Idioma: Português (Brasil)
+Padrões: HTML5, CSS3, JavaScript
+Fontes: Fredoka, Nunito (Google Fonts)
+Componentes: FormSubmit (envio do formulário por e-mail)
+
+/* THANKS */
+A cada padrinho e madrinha que pendurou o próprio nome no Natal de uma criança.

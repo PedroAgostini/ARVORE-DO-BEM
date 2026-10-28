@@ -1,0 +1,17 @@
+{
+  "name": "Árvore do Bem · Fundação Edmílson",
+  "short_name": "Árvore do Bem",
+  "description": "Campanha de Natal 2026 da Fundação Edmílson: apadrinhe crianças com um kit de roupa, sapato, brinquedo e higiene.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/?utm_source=pwa",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#FAF6EE",
+  "theme_color": "#1F4C38",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

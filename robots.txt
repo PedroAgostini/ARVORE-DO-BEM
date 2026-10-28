@@ -1,0 +1,6 @@
+# Árvore do Bem · Fundação Edmílson
+User-agent: *
+Allow: /
+Disallow: /404.html
+
+Sitemap: https://arvoredobem.fundacaoedmilson.org.br/sitemap.xml

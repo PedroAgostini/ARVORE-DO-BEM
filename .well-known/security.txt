@@ -1,0 +1,4 @@
+Contact: mailto:contato@fundacaoedmilson.org.br
+Expires: 2027-10-28T00:00:00.000Z
+Preferred-Languages: pt-BR, en
+Canonical: https://arvoredobem.fundacaoedmilson.org.br/.well-known/security.txt
