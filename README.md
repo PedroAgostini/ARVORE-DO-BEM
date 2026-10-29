@@ -17,7 +17,7 @@ Página da campanha de Natal 2026 da Fundação Edmílson. Padrinhos e empresas 
 
 ## Formulário
 
-O formulário tem 3 passos (dados, contato e quantidade de crianças). Ao confirmar:
+O formulário tem 3 passos (dados, contato e crianças). No último, o padrinho escolhe quantas crianças vai ajudar e, se já tiver o cartão, informa o código e o nome de cada uma (opcional, até 10). Ao confirmar:
 
 1. abre o WhatsApp da campanha (+55 11 91574-5343) com a mensagem pronta;
 2. envia uma cópia por e-mail para `contato@fundacaoedmilson.org.br` via [FormSubmit](https://formsubmit.co).

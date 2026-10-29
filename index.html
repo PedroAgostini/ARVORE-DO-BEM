@@ -451,6 +451,15 @@ form { display: grid; gap: 18px; margin-top: 24px; }
 .campo .contador input:focus { outline: none; border-color: var(--verde-floresta); background: var(--creme-claro); box-shadow: 0 0 0 3px rgba(232, 179, 73, 0.55); }
 .campo[data-erro] .contador input { border-color: var(--vermelho); }
 .ajuda { font-size: 0.875rem; line-height: 1.5; color: var(--tinta-corpo); }
+.criancas { display: grid; gap: 12px; }
+.criancas-titulo { font-weight: 700; color: var(--tinta-titulo); font-size: 0.9375rem; line-height: 1.35; }
+.criancas-titulo small { font-weight: 400; color: var(--tinta-suave); font-size: inherit; }
+.lista-criancas { display: grid; gap: 14px; }
+.crianca-linha { display: grid; grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr); gap: 8px 12px; padding-top: 14px; border-top: 1px dashed var(--borda-areia); }
+.crianca-linha:first-child { padding-top: 0; border-top: 0; }
+.crianca-num { grid-column: 1 / -1; font-weight: 800; font-size: 0.8125rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tinta-suave); }
+.crianca-linha:only-child .crianca-num { display: none; }
+.crianca-linha .campo label { font-size: 0.875rem; }
 form .btn { width: 100%; margin-top: 6px; }
 .form-passo { display: grid; gap: 18px; }
 .form-passo[hidden] { display: none; }
@@ -753,8 +762,14 @@ form .btn { width: 100%; margin-top: 6px; }
                   <input id="quantidade" name="quantidade" type="number" inputmode="numeric" min="1" max="300" step="1" value="1" required aria-describedby="ajuda-quantidade">
                   <button class="contador-btn" type="button" data-delta="1" aria-label="Aumentar uma criança" aria-controls="quantidade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
                 </div>
-                <p class="ajuda" id="ajuda-quantidade">Cada criança recebe um kit completo: roupa, sapato, brinquedo e higiene. A equipe indica as crianças para você.</p>
+                <p class="ajuda" id="ajuda-quantidade">Cada criança recebe um kit completo: roupa, sapato, brinquedo e higiene.</p>
                 <p class="erro" id="erro-quantidade">Escolha um número de 1 a 300.</p>
+              </div>
+              <div class="criancas" role="group" aria-labelledby="titulo-criancas" aria-describedby="ajuda-criancas">
+                <p class="criancas-titulo" id="titulo-criancas">Já escolheu o cartão? Conte quem é a criança <small>(opcional)</small></p>
+                <p class="ajuda" id="ajuda-criancas">O código e o nome estão no cartão da árvore. Se ainda não escolheu, deixe em branco: a equipe indica as crianças para você.</p>
+                <div class="lista-criancas" id="lista-criancas"></div>
+                <p class="ajuda" id="aviso-criancas" hidden>Aqui cabem até 10 crianças. Os outros cartões você combina com a equipe pelo WhatsApp.</p>
               </div>
             </div>
 
@@ -910,8 +925,56 @@ form .btn { width: 100%; margin-top: 6px; }
       var n = (qtd() || 0) + parseInt(b.getAttribute("data-delta"), 10);
       quantidade.value = Math.min(300, Math.max(1, n));
       marcar(quantidade, false);
+      atualizarCriancas();
     });
   });
+  quantidade.addEventListener("input", atualizarCriancas);
+
+  // Código e nome de cada criança: uma linha por criança, até 10
+  var MAX_LINHAS = 10;
+  var listaCriancas = document.getElementById("lista-criancas");
+  var avisoCriancas = document.getElementById("aviso-criancas");
+  function campoCrianca(i, tipo, rotulo, attrs, msgErro) {
+    var id = tipo + "-" + i;
+    var div = document.createElement("div");
+    div.className = "campo";
+    div.innerHTML = '<label for="' + id + '">' + rotulo + '</label>' +
+      '<input id="' + id + '" type="text" data-regra="' + tipo + '" ' + attrs + '>' +
+      '<p class="erro" id="erro-' + id + '">' + msgErro + '</p>';
+    return div;
+  }
+  function atualizarCriancas() {
+    var alvo = Math.min(MAX_LINHAS, Math.max(1, qtd() || 1));
+    while (listaCriancas.children.length < alvo) {
+      var i = listaCriancas.children.length + 1;
+      var linha = document.createElement("div");
+      linha.className = "crianca-linha";
+      linha.innerHTML = '<p class="crianca-num">Criança ' + i + '</p>';
+      linha.appendChild(campoCrianca(i, "codigo", "Código", 'maxlength="20" autocomplete="off" placeholder="Do cartão"', "Use só letras, números e hífen."));
+      linha.appendChild(campoCrianca(i, "crianca", "Nome da criança", 'maxlength="60" autocomplete="off" placeholder="Como no cartão"', "Escreva só o nome, sem links ou números."));
+      listaCriancas.appendChild(linha);
+    }
+    while (listaCriancas.children.length > alvo) listaCriancas.lastElementChild.remove();
+    avisoCriancas.hidden = !(qtd() > MAX_LINHAS);
+  }
+  function criancasInformadas() {
+    var lista = [];
+    listaCriancas.querySelectorAll(".crianca-linha").forEach(function (linha, i) {
+      var codigo = document.getElementById("codigo-" + (i + 1)).value.trim();
+      var nome = document.getElementById("crianca-" + (i + 1)).value.trim();
+      if (codigo || nome) lista.push({ codigo: codigo, nome: nome });
+    });
+    return lista;
+  }
+  listaCriancas.addEventListener("focusout", function (e) {
+    var el = e.target;
+    if (el.dataset && el.dataset.regra && el.value) marcar(el, !regras[el.dataset.regra](el.value));
+  });
+  listaCriancas.addEventListener("input", function (e) {
+    var el = e.target;
+    if (el.closest(".campo").hasAttribute("data-erro") && regras[el.dataset.regra](el.value)) marcar(el, false);
+  });
+  atualizarCriancas();
 
   function marcar(input, comErro) {
     var campo = input.closest(".campo");
@@ -946,9 +1009,11 @@ form .btn { width: 100%; margin-top: 6px; }
     empresa: function (v) { v = v.trim(); return v === "" || (v.length <= 80 && !SUSPEITO.test(v)); },
     telefone: function (v) { var n = v.replace(/\D/g, "").length; return n === 10 || n === 11; },
     email: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); },
-    quantidade: function (v) { var n = Number(v); return Number.isInteger(n) && n >= 1 && n <= 300; }
+    quantidade: function (v) { var n = Number(v); return Number.isInteger(n) && n >= 1 && n <= 300; },
+    codigo: function (v) { v = v.trim(); return v === "" || /^[\p{L}\d][\p{L}\d \-\/]{0,19}$/u.test(v); },
+    crianca: function (v) { v = v.trim(); return v === "" || regras.nome(v); }
   };
-  Object.keys(regras).forEach(function (id) {
+  ["nome", "empresa", "telefone", "email", "quantidade"].forEach(function (id) {
     var el = document.getElementById(id);
     el.addEventListener("blur", function () { if (el.value) marcar(el, !regras[id](el.value)); });
     el.addEventListener("input", function () { if (el.closest(".campo").hasAttribute("data-erro") && regras[id](el.value)) marcar(el, false); });
@@ -988,9 +1053,10 @@ form .btn { width: 100%; margin-top: 6px; }
 
   function validarPasso(n) {
     var primeiroErro = null;
-    PASSOS[n].campos.forEach(function (id) {
-      var el = document.getElementById(id);
-      var ok = regras[id](el.value);
+    var campos = PASSOS[n].campos.map(function (id) { return document.getElementById(id); });
+    if (n === PASSOS.length - 1) campos = campos.concat([].slice.call(listaCriancas.querySelectorAll("input")));
+    campos.forEach(function (el) {
+      var ok = regras[el.dataset.regra || el.id](el.value);
       marcar(el, !ok);
       if (!ok && !primeiroErro) primeiroErro = el;
     });
@@ -1015,24 +1081,36 @@ form .btn { width: 100%; margin-top: 6px; }
 
     var v = function (id) { return document.getElementById(id).value.trim(); };
     var criancas = qtd() === 1 ? "1 criança" : qtd() + " crianças";
-    var texto = "Olá, sou " + v("nome") + (v("empresa") ? ", da empresa " + v("empresa") : "") + ", quero apadrinhar " + criancas;
+    var informadas = criancasInformadas();
+    var descricoes = informadas.map(function (c) {
+      return c.nome && c.codigo ? c.nome + " (código " + c.codigo + ")" : c.nome || "código " + c.codigo;
+    });
+    var quais = descricoes.length > 1 ? descricoes.slice(0, -1).join(", ") + " e " + descricoes[descricoes.length - 1] : descricoes.join("");
+    var texto = "Olá, sou " + v("nome") + (v("empresa") ? ", da empresa " + v("empresa") : "") + ", quero apadrinhar " + criancas + (quais ? ": " + quais : "");
 
     var url = waLink(texto);
     linkEnvio.href = url;
     var aberta = null;
     try { aberta = window.open(url, "_blank", "noopener"); } catch (err) {}
-    assinaturaAtual = [v("nome"), v("empresa"), v("telefone"), v("email"), qtd()].join("|").toLowerCase();
+    assinaturaAtual = [v("nome"), v("empresa"), v("telefone"), v("email"), qtd(), descricoes.join(",")].join("|").toLowerCase();
     var repetido = jaEnviado(assinaturaAtual);
     if (repetido) {
       statusEmail.className = "status-email ok";
       statusEmail.textContent = "Seus dados já foram enviados por e-mail há instantes.";
-    } else enviarEmail({
-      "Nome": v("nome"),
-      "Empresa": v("empresa") || "Não veio por empresa",
-      "Telefone": v("telefone"),
-      "E-mail": v("email"),
-      "Quantidade de crianças": String(qtd())
-    });
+    } else {
+      var dados = {
+        "Nome": v("nome"),
+        "Empresa": v("empresa") || "Não veio por empresa",
+        "Telefone": v("telefone"),
+        "E-mail": v("email"),
+        "Quantidade de crianças": String(qtd())
+      };
+      if (!informadas.length) dados["Crianças"] = "Ainda não escolheu o cartão";
+      informadas.forEach(function (c, i) {
+        dados["Criança " + (i + 1)] = (c.nome || "Nome não informado") + " · código " + (c.codigo || "não informado");
+      });
+      enviarEmail(dados);
+    }
     etapaForm.hidden = true;
     etapaPronto.hidden = false;
     etapaPronto.focus();
@@ -1040,6 +1118,8 @@ form .btn { width: 100%; margin-top: 6px; }
 
   document.getElementById("voltar").addEventListener("click", function () {
     form.reset();
+    while (listaCriancas.children.length) listaCriancas.lastElementChild.remove();
+    atualizarCriancas();
     statusEmail.textContent = "";
     statusEmail.className = "status-email";
     etapaPronto.hidden = true;
