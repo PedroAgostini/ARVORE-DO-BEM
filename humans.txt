@@ -10,11 +10,10 @@ Período: 03/11/2026 a 30/11/2026
 WhatsApp: +55 11 91574-5343
 
 /* SITE */
-Última atualização: 2026/10/28
+Última atualização: 2026/10/29
 Idioma: Português (Brasil)
-Padrões: HTML5, CSS3, JavaScript
+Padrões: HTML5, CSS3, JavaScript, PHP
 Fontes: Fredoka, Nunito (Google Fonts)
-Componentes: FormSubmit (envio do formulário por e-mail)
 
 /* THANKS */
 A cada padrinho e madrinha que pendurou o próprio nome no Natal de uma criança.

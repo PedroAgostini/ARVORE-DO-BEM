@@ -2,3 +2,9 @@ Thumbs.db
 desktop.ini
 .DS_Store
 *.tmp
+
+# Dados do servidor: senha e cadastros não vão para o GitHub
+privado/config.php
+privado/*.csv
+privado/*.log
+privado/*.json

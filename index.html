@@ -865,30 +865,22 @@ form .btn { width: 100%; margin-top: 6px; }
   };
   function waLink(texto) { return "https://wa.me/" + FONE + "?text=" + encodeURIComponent(texto); }
 
-  // Cópia por e-mail via FormSubmit (o primeiro envio pede ativação no próprio e-mail de destino)
-  var EMAIL_DESTINO = "contato@fundacaoedmilson.org.br";
+  // Cadastro no próprio servidor: enviar.php salva na planilha e avisa a equipe por e-mail
   var statusEmail = document.getElementById("status-email");
 
   function enviarEmail(dados) {
     statusEmail.className = "status-email";
-    statusEmail.textContent = "Enviando seus dados também por e-mail…";
-    var corpo = Object.assign({
-      _subject: "Novo padrinho · Árvore do Bem · " + dados.Nome,
-      _template: "table",
-      _captcha: "false",
-      _honey: isca.value,
-      _blacklist: "viagra, casino, cassino, bitcoin, crypto, cripto, forex, backlink, seo, loan, emprestimo, porn, bet",
-      _replyto: dados["E-mail"]
-    }, dados);
+    statusEmail.textContent = "Registrando seu cadastro com a equipe…";
+    var corpo = Object.assign({ site: isca.value, t: Date.now() - abertoEm }, dados);
     var ctrl = "AbortController" in window ? new AbortController() : null;
-    var limite = setTimeout(function () { if (ctrl) ctrl.abort(); }, 45000);
-    fetch("https://formsubmit.co/ajax/" + EMAIL_DESTINO, {
+    var limite = setTimeout(function () { if (ctrl) ctrl.abort(); }, 20000);
+    fetch("enviar.php", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body: JSON.stringify(corpo),
       signal: ctrl ? ctrl.signal : undefined
     })
-      .then(function (r) { return r.json().then(function (j) { return r.ok && String(j.success) === "true"; }); })
+      .then(function (r) { return r.json().then(function (j) { return r.ok && j.ok === true; }); })
       .then(function (ok) { if (!ok) throw new Error("envio"); emailOk(); })
       .catch(emailFalhou)
       .then(function () { clearTimeout(limite); });
@@ -896,11 +888,11 @@ form .btn { width: 100%; margin-top: 6px; }
   function emailOk() {
     gravarUltimoEnvio();
     statusEmail.className = "status-email ok";
-    statusEmail.textContent = "Seus dados também chegaram por e-mail à equipe da campanha.";
+    statusEmail.textContent = "Seu cadastro também ficou registrado com a equipe da campanha.";
   }
   function emailFalhou() {
     statusEmail.className = "status-email falha";
-    statusEmail.textContent = "Não conseguimos mandar por e-mail agora. Pelo WhatsApp a equipe recebe tudo do mesmo jeito.";
+    statusEmail.textContent = "Não conseguimos registrar seu cadastro agora. Pelo WhatsApp a equipe recebe tudo do mesmo jeito.";
   }
 
   document.querySelectorAll(".js-wa").forEach(function (a) {
@@ -1098,18 +1090,14 @@ form .btn { width: 100%; margin-top: 6px; }
       statusEmail.className = "status-email ok";
       statusEmail.textContent = "Seus dados já foram enviados por e-mail há instantes.";
     } else {
-      var dados = {
-        "Nome": v("nome"),
-        "Empresa": v("empresa") || "Não veio por empresa",
-        "Telefone": v("telefone"),
-        "E-mail": v("email"),
-        "Quantidade de crianças": String(qtd())
-      };
-      if (!informadas.length) dados["Crianças"] = "Ainda não escolheu o cartão";
-      informadas.forEach(function (c, i) {
-        dados["Criança " + (i + 1)] = (c.nome || "Nome não informado") + " · código " + (c.codigo || "não informado");
+      enviarEmail({
+        nome: v("nome"),
+        empresa: v("empresa"),
+        telefone: v("telefone"),
+        email: v("email"),
+        quantidade: qtd(),
+        criancas: informadas
       });
-      enviarEmail(dados);
     }
     etapaForm.hidden = true;
     etapaPronto.hidden = false;
