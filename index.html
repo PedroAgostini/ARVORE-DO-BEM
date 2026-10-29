@@ -783,10 +783,10 @@ form .btn { width: 100%; margin-top: 6px; }
 
         <div id="etapa-pronto" class="pronto" hidden tabindex="-1">
           <h3>Obrigado!</h3>
-          <p>Falta só um passo. Envie seus dados pelo WhatsApp da campanha para confirmar o apadrinhamento.</p>
           <p class="status-email" id="status-email" role="status" aria-live="polite"></p>
+          <p>Agora é só combinar a entrega do kit. Sua mensagem já está pronta para enviar no WhatsApp da campanha.</p>
           <a class="btn btn-verde" id="link-envio" href="https://wa.me/5511915745343" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg>Enviar pelo WhatsApp
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg>Enviar mensagem no WhatsApp
           </a>
           <br>
           <button class="voltar" type="button" id="voltar">Registrar outro cartão</button>
@@ -888,11 +888,11 @@ form .btn { width: 100%; margin-top: 6px; }
   function emailOk() {
     gravarUltimoEnvio();
     statusEmail.className = "status-email ok";
-    statusEmail.textContent = "Seu cadastro também ficou registrado com a equipe da campanha.";
+    statusEmail.textContent = "Seu apadrinhamento está registrado com a equipe da campanha.";
   }
   function emailFalhou() {
     statusEmail.className = "status-email falha";
-    statusEmail.textContent = "Não conseguimos registrar seu cadastro agora. Pelo WhatsApp a equipe recebe tudo do mesmo jeito.";
+    statusEmail.textContent = "Não conseguimos registrar seu cadastro agora. Envie pelo WhatsApp que a equipe recebe tudo do mesmo jeito.";
   }
 
   document.querySelectorAll(".js-wa").forEach(function (a) {
@@ -1028,7 +1028,6 @@ form .btn { width: 100%; margin-top: 6px; }
   var info = document.getElementById("passo-info");
   var btnVoltar = document.getElementById("passo-voltar");
   var btnAvancar = document.getElementById("passo-avancar");
-  var ICONE_WA = '<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg>';
 
   function irPara(n, foco) {
     atual = n;
@@ -1036,7 +1035,7 @@ form .btn { width: 100%; margin-top: 6px; }
     pontos.forEach(function (p, i) { p.classList.toggle("ativo", i <= n); });
     info.textContent = "Passo " + (n + 1) + " de " + PASSOS.length + " · " + PASSOS[n].titulo;
     btnVoltar.hidden = n === 0;
-    btnAvancar.innerHTML = n === PASSOS.length - 1 ? ICONE_WA + "Confirmar apadrinhamento" : "Continuar";
+    btnAvancar.textContent = n === PASSOS.length - 1 ? "Confirmar apadrinhamento" : "Continuar";
     if (foco) {
       var primeiro = paineis[n].querySelector("input:not([disabled])");
       if (primeiro) primeiro.focus();
@@ -1080,15 +1079,12 @@ form .btn { width: 100%; margin-top: 6px; }
     var quais = descricoes.length > 1 ? descricoes.slice(0, -1).join(", ") + " e " + descricoes[descricoes.length - 1] : descricoes.join("");
     var texto = "Olá, sou " + v("nome") + (v("empresa") ? ", da empresa " + v("empresa") : "") + ", quero apadrinhar " + criancas + (quais ? ": " + quais : "");
 
-    var url = waLink(texto);
-    linkEnvio.href = url;
-    var aberta = null;
-    try { aberta = window.open(url, "_blank", "noopener"); } catch (err) {}
+    linkEnvio.href = waLink(texto);
     assinaturaAtual = [v("nome"), v("empresa"), v("telefone"), v("email"), qtd(), descricoes.join(",")].join("|").toLowerCase();
     var repetido = jaEnviado(assinaturaAtual);
     if (repetido) {
       statusEmail.className = "status-email ok";
-      statusEmail.textContent = "Seus dados já foram enviados por e-mail há instantes.";
+      statusEmail.textContent = "Seu cadastro já tinha sido registrado há instantes.";
     } else {
       enviarEmail({
         nome: v("nome"),

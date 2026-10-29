@@ -19,10 +19,10 @@ Página da campanha de Natal 2026 da Fundação Edmílson. Padrinhos e empresas 
 
 O formulário tem 3 passos (dados, contato e crianças). No último, o padrinho escolhe quantas crianças vai ajudar e, se já tiver o cartão, informa o código e o nome de cada uma (opcional, até 10). Ao confirmar:
 
-1. abre o WhatsApp da campanha (+55 11 91574-5343) com a mensagem pronta;
-2. manda os dados para o `enviar.php`, no próprio site, que:
+1. manda os dados para o `enviar.php`, no próprio site, que:
    - salva o cadastro na planilha `privado/cadastros.csv` (abre direto no Excel ou no Google Planilhas);
-   - avisa `contato@fundacaoedmilson.org.br` por e-mail, enviando pelo e-mail interno da Hostinger (sem senha nem serviço externo).
+   - avisa `contato@fundacaoedmilson.org.br` por e-mail, enviando pelo e-mail interno da Hostinger (sem senha nem serviço externo);
+2. mostra a mensagem de obrigado com o botão "Enviar mensagem no WhatsApp", que abre o WhatsApp da campanha (+55 11 91574-5343) com a mensagem pronta para combinar a entrega.
 
 A planilha é a garantia: se o e-mail falhar, o cadastro continua salvo. Falhas de envio ficam registradas em `privado/erros.log`.
 
