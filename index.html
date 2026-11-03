@@ -416,6 +416,22 @@ form { display: grid; gap: 18px; margin-top: 24px; }
 .campo { display: grid; gap: 6px; min-width: 0; }
 .campo label { font-weight: 700; color: var(--tinta-titulo); font-size: 0.9375rem; line-height: 1.35; }
 .campo label small { font-weight: 400; color: var(--tinta-suave); font-size: inherit; }
+.campo[hidden] { display: none; }
+.campo-rotulo { font-weight: 700; color: var(--tinta-titulo); font-size: 0.9375rem; line-height: 1.35; }
+.escolhas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.escolha { position: relative; display: block; }
+.escolha input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.escolha span {
+  display: grid; place-items: center; min-height: 52px; padding: 10px 16px;
+  background: var(--creme); color: var(--verde-floresta);
+  border: 2px solid var(--campo-borda); border-radius: 14px;
+  font-weight: 700; font-size: 1rem;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.escolha:hover span { border-color: var(--tinta-suave); }
+.escolha input:checked + span { background: var(--verde-floresta); border-color: var(--verde-floresta); color: var(--creme); }
+.escolha input:focus-visible + span { box-shadow: 0 0 0 3px rgba(232, 179, 73, 0.55); border-color: var(--verde-floresta); }
+.campo[data-erro] .escolha span { border-color: var(--vermelho); }
 .campo input[type="text"], .campo input[type="tel"], .campo input[type="email"] {
   width: 100%; min-height: 52px; padding: 12px 16px;
   background: var(--creme); color: var(--verde-floresta);
@@ -735,9 +751,17 @@ form .btn { width: 100%; margin-top: 6px; }
                 <p class="erro" id="erro-nome">Escreva seu nome, sem links ou números.</p>
               </div>
               <div class="campo">
-                <label for="empresa">Veio por alguma empresa? Se sim, qual? <small>(opcional)</small></label>
+                <p class="campo-rotulo" id="rotulo-veio">Veio por alguma empresa?</p>
+                <div class="escolhas" id="veio-empresa" role="radiogroup" aria-labelledby="rotulo-veio">
+                  <label class="escolha"><input type="radio" name="veio" value="sim"><span>Sim</span></label>
+                  <label class="escolha"><input type="radio" name="veio" value="nao"><span>Não</span></label>
+                </div>
+                <p class="erro" id="erro-veio-empresa">Marque sim ou não.</p>
+              </div>
+              <div class="campo" id="campo-empresa" hidden>
+                <label for="empresa">Qual empresa?</label>
                 <input id="empresa" name="empresa" type="text" autocomplete="organization" maxlength="80" placeholder="Nome da empresa">
-                <p class="erro" id="erro-empresa">Escreva só o nome da empresa, sem links.</p>
+                <p class="erro" id="erro-empresa">Escreva o nome da empresa, sem links.</p>
               </div>
             </div>
 
@@ -983,6 +1007,7 @@ form .btn { width: 100%; margin-top: 6px; }
   }
 
   // Antispam: links, código e domínios não são aceitos em nome e empresa
+  var SEM_EMPRESA = /^(n[ãa]o\b.*|n|nenhum[a]?|nada|sem empresa|n\/a|-+|\.+|x)$/i;
   var SUSPEITO = /(https?:|www\.|\.(com|net|org|ru|cn|xyz|info|biz|top|shop|online|site)\b|[<>{}\[\]]|@)/i;
   var abertoEm = Date.now();
   var TEMPO_MINIMO = 4000;          // ninguém preenche os 3 passos em menos de 4 s
@@ -998,13 +1023,26 @@ form .btn { width: 100%; margin-top: 6px; }
 
   var regras = {
     nome: function (v) { v = v.trim(); return v.length >= 2 && v.length <= 80 && /\p{L}/u.test(v) && !/\d/.test(v) && !SUSPEITO.test(v); },
-    empresa: function (v) { v = v.trim(); return v === "" || (v.length <= 80 && !SUSPEITO.test(v)); },
+    "veio-empresa": function () { return !!veioEscolha(); },
+    empresa: function (v) { v = v.trim(); return veioEscolha() !== "sim" || (v.length >= 2 && v.length <= 80 && !SUSPEITO.test(v) && !SEM_EMPRESA.test(v)); },
     telefone: function (v) { var n = v.replace(/\D/g, "").length; return n === 10 || n === 11; },
     email: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); },
     quantidade: function (v) { var n = Number(v); return Number.isInteger(n) && n >= 1 && n <= 300; },
     codigo: function (v) { v = v.trim(); return v === "" || /^[\p{L}\d][\p{L}\d \-\/]{0,19}$/u.test(v); },
     crianca: function (v) { v = v.trim(); return v === "" || regras.nome(v); }
   };
+  // Veio por empresa? O campo do nome da empresa só aparece no "Sim"
+  var grupoVeio = document.getElementById("veio-empresa");
+  var campoEmpresa = document.getElementById("campo-empresa");
+  function veioEscolha() { var r = grupoVeio.querySelector("input:checked"); return r ? r.value : ""; }
+  grupoVeio.addEventListener("change", function () {
+    marcar(grupoVeio, false);
+    var sim = veioEscolha() === "sim";
+    campoEmpresa.hidden = !sim;
+    if (sim) document.getElementById("empresa").focus();
+    else marcar(document.getElementById("empresa"), false);
+  });
+
   ["nome", "empresa", "telefone", "email", "quantidade"].forEach(function (id) {
     var el = document.getElementById(id);
     el.addEventListener("blur", function () { if (el.value) marcar(el, !regras[id](el.value)); });
@@ -1018,7 +1056,7 @@ form .btn { width: 100%; margin-top: 6px; }
 
   // Passos do formulário
   var PASSOS = [
-    { titulo: "Quem é você", campos: ["nome", "empresa"] },
+    { titulo: "Quem é você", campos: ["nome", "veio-empresa", "empresa"] },
     { titulo: "Como falar com você", campos: ["telefone", "email"] },
     { titulo: "Quantas crianças", campos: ["quantidade"] }
   ];
@@ -1051,7 +1089,7 @@ form .btn { width: 100%; margin-top: 6px; }
       marcar(el, !ok);
       if (!ok && !primeiroErro) primeiroErro = el;
     });
-    if (primeiroErro) { primeiroErro.focus(); return false; }
+    if (primeiroErro) { (primeiroErro.querySelector("input") || primeiroErro).focus(); return false; }
     return true;
   }
 
@@ -1071,16 +1109,18 @@ form .btn { width: 100%; margin-top: 6px; }
     }
 
     var v = function (id) { return document.getElementById(id).value.trim(); };
+    // "Não", "nenhuma", "sem empresa"… no campo da empresa contam como campo vazio
+    var empresa = veioEscolha() === "sim" && !SEM_EMPRESA.test(v("empresa")) ? v("empresa") : "";
     var criancas = qtd() === 1 ? "1 criança" : qtd() + " crianças";
     var informadas = criancasInformadas();
     var descricoes = informadas.map(function (c) {
       return c.nome && c.codigo ? c.nome + " (código " + c.codigo + ")" : c.nome || "código " + c.codigo;
     });
     var quais = descricoes.length > 1 ? descricoes.slice(0, -1).join(", ") + " e " + descricoes[descricoes.length - 1] : descricoes.join("");
-    var texto = "Olá, sou " + v("nome") + (v("empresa") ? ", da empresa " + v("empresa") : "") + ", quero apadrinhar " + criancas + (quais ? ": " + quais : "");
+    var texto = "Olá, sou " + v("nome") + (empresa ? ", da empresa " + empresa : "") + ", quero apadrinhar " + criancas + (quais ? ": " + quais : "");
 
     linkEnvio.href = waLink(texto);
-    assinaturaAtual = [v("nome"), v("empresa"), v("telefone"), v("email"), qtd(), descricoes.join(",")].join("|").toLowerCase();
+    assinaturaAtual = [v("nome"), empresa, v("telefone"), v("email"), qtd(), descricoes.join(",")].join("|").toLowerCase();
     var repetido = jaEnviado(assinaturaAtual);
     if (repetido) {
       statusEmail.className = "status-email ok";
@@ -1088,7 +1128,7 @@ form .btn { width: 100%; margin-top: 6px; }
     } else {
       enviarEmail({
         nome: v("nome"),
-        empresa: v("empresa"),
+        empresa: empresa,
         telefone: v("telefone"),
         email: v("email"),
         quantidade: qtd(),
@@ -1102,6 +1142,7 @@ form .btn { width: 100%; margin-top: 6px; }
 
   document.getElementById("voltar").addEventListener("click", function () {
     form.reset();
+    campoEmpresa.hidden = true;
     while (listaCriancas.children.length) listaCriancas.lastElementChild.remove();
     atualizarCriancas();
     statusEmail.textContent = "";

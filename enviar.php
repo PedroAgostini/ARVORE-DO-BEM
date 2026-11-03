@@ -84,6 +84,8 @@ function nomeValido(string $v): bool
 
 $nome = texto($d['nome'] ?? '', 80);
 $empresa = texto($d['empresa'] ?? '', 80);
+// "Não", "nenhuma", "sem empresa"… contam como campo vazio
+if (preg_match('~^(n[ãa]o\b.*|n|nenhum[a]?|nada|sem empresa|n/a|-+|\.+|x)$~iu', $empresa)) $empresa = '';
 $telefone = texto($d['telefone'] ?? '', 20);
 $email = texto($d['email'] ?? '', 120);
 $quantidade = filter_var($d['quantidade'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 300]]);
